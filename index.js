@@ -35,7 +35,7 @@ const nummoji = [
 ];
 
 
-const commands = ['!gm', '!gm wen', '!gm rank'];
+const commands = ['!bm', '!bm wen', '!bm rank'];
 
 async function checkTime(userId, now) {
   const formerRaw = await getUser(userId).then( (t) => { return t.ts } );
@@ -98,11 +98,11 @@ discord.on('messageCreate', async m => {
     const username = m.author.tag;
 
     try {
-      if (m.content.indexOf('!gm setup') === 0) {
+      if (m.content.indexOf('!bm setup') === 0) {
         try {
           if (m.channel.permissionsFor(m.author).has(Permissions.FLAGS.MANAGE_GUILD)) {
-            var keyword = m.content.split('!gm setup')[1].trim();
-            if (keyword === '') { keyword = 'gm'; }
+            var keyword = m.content.split('!bm setup')[1].trim();
+            if (keyword === '') { keyword = 'bm'; }
             await insertGuild(m.guild.name, m.channel.name, m.channel.id, keyword);
             log(`New guild added! ${m.guild.name}, ${m.channel.name}, word: ${keyword}`, 'g');
             await discord.channels.cache.get(m.channelId).send(`Setup to track ${keyword} in ${m.channel.name}`);
@@ -114,13 +114,13 @@ discord.on('messageCreate', async m => {
           return;
         }
 
-      } else if (m.content === '!gm help') {
+      } else if (m.content === '!bm help') {
         if (botHasPermish) {
           const message = new MessageEmbed()
             .setTitle('👋')
-            .setDescription(`thanks for adding me!\nmy purpose is to count your gm's\nsay gm once a day to increment your streak\nmiss a day and your streak gets reset :(\nwhen you have successfully gm'ed you'll see reaction emojis with your current streak\nif you haven't waited long enough since your last gm you'll see a ⏰ reaction`)
-            .addField('other commands',"`!gm` responds with your current streak and running total\n`!gm wen` responds with wen you last said it and wen to say it next\n`!gm rank` displays the current streak leader board\n`!gm setup` setups me up to track in the channel where it is sent\n")
-            .addField('===========================','gm')
+            .setDescription(`thanks for adding me!\nmy purpose is to count your bm's\nsay bm once a day to increment your streak\nmiss a day and your streak gets reset :(\nwhen you have successfully bm'ed you'll see reaction emojis with your current streak\nif you haven't waited long enough since your last bm you'll see a ⏰ reaction`)
+            .addField('other commands',"`!bm` responds with your current streak and running total\n`!bm wen` responds with wen you last said it and wen to say it next\n`!bm rank` displays the current streak leader board\n`!bm setup` setups me up to track in the channel where it is sent\n")
+            .addField('===========================','bm')
             .addField('brought to you by', '[CanuDAO](https://discord.gg/dv7SXUaMKD)');
           try { 
             await discord.channels.cache.get(m.channelId).send({embeds:[message]});
@@ -158,7 +158,7 @@ discord.on('messageCreate', async m => {
               }
             }
 
-          } else if (m.content === '!gm') {
+          } else if (m.content === '!bm') {
             const now = dayjs().valueOf();
             const check = await checkTime(userId, now).catch( () => 0);
             if (check === -1) zeroUserStreak(userId);
@@ -168,15 +168,15 @@ discord.on('messageCreate', async m => {
             });
             if (user === 0) {
               try { 
-                await discord.channels.cache.get(m.channelId).send(`gm ${m.author}, you've never said gm, give it a try!`);
+                await discord.channels.cache.get(m.channelId).send(`bm ${m.author}, you've never said bm, give it a try!`);
               } catch(e) { return }
             } else {
               try {
-                await discord.channels.cache.get(m.channelId).send(`gm ${m.author}, you have a streak of ${user.streak} and overall have said ${config.keyword} ${user.history.length} times`);
+                await discord.channels.cache.get(m.channelId).send(`bm ${m.author}, you have a streak of ${user.streak} and overall have said ${config.keyword} ${user.history.length} times`);
               } catch(e) { return }
             }
 
-          } else if (m.content === '!gm avg') {
+          } else if (m.content === '!bm avg') {
             const avg = await getUser(userId).then( (t) => { 
               const history = t.history;
               const length = history.length;
@@ -191,7 +191,7 @@ discord.on('messageCreate', async m => {
               await discord.channels.cache.get(m.channelId).send(`You usually say ${config.keyword} around ${Math.round(avg)}:00`);
             } catch(e) { return }
 
-          } else if (m.content === '!gm rank') {
+          } else if (m.content === '!bm rank') {
               const cutoff = dayjs().subtract(2,'day').valueOf();
               const rank = await getRank(cutoff);
               (rank[0] == undefined || rank[0].streak === 0) ? rank[0] = ({'username': 'no one', 'streak': 'NA'}) : null;
@@ -204,7 +204,7 @@ discord.on('messageCreate', async m => {
                 `🥇 ${rank[0].username} -> ${rank[0].streak}\n🥈 ${rank[1].username} -> ${rank[1].streak}\n🥉 ${rank[2].username} -> ${rank[2].streak}\n4️⃣ ${rank[3].username} -> ${rank[3].streak}\n5️⃣ ${rank[4].username} -> ${rank[4].streak}`);
               } catch(e) { return }
 
-          } else if (m.content === '!gm wen') {
+          } else if (m.content === '!bm wen') {
             const formerRaw = await getUser(userId).then( (t) => { return t.ts } );
             const formerTime = dayjs(formerRaw);
             const lower = formerTime.add(15,'hours');
@@ -213,7 +213,7 @@ discord.on('messageCreate', async m => {
               await discord.channels.cache.get(m.channelId).send(`You previously said ${config.keyword} at <t:${formerTime.unix()}>. Say it again after <t:${lower.unix()}> but before <t:${upper.unix()}>`);
             } catch(e) { return }
           
-          } else if (m.content === '!gm rank total') {
+          } else if (m.content === '!bm rank total') {
             const rank = await getTotalRank();
             (rank[0] == undefined || rank[0].historyCount === 0) ? rank[0] = ({'username': 'no one', 'streak': 'NA'}) : null;
             (rank[1] == undefined || rank[1].historyCount === 0) ? rank[1] = ({'username': 'no one', 'streak': 'NA'}) : null;
@@ -229,7 +229,7 @@ discord.on('messageCreate', async m => {
       } else {
           if (commands.indexOf(m.content) > -1) {
             try {
-              await discord.channels.cache.get(m.channelId).send('Do setup with\n```!gm setup```')
+              await discord.channels.cache.get(m.channelId).send('Do setup with\n```!bm setup```')
             } catch(e) { return }
           }
       }
